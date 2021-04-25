@@ -17,15 +17,20 @@ class App {
   #map;
   #mapEvent;
   constructor() {
+    // Gets current location and load the map to the DOM
     this._getPosition();
 
+    // Listening & Handling submit event on the form
     form.addEventListener('submit', this._addNewWorkout.bind(this));
 
-    this._toggleTypeField();
+    // Listening & Handling change event on type input
+    inputType.addEventListener('change', this._toggleTypeField);
   }
 
   _getPosition() {
+    // Check if the navigation API is available
     if (navigator.geolocation) {
+      // Gets the current location
       navigator.geolocation.getCurrentPosition(
         this._loadMap.bind(this),
         function () {
@@ -36,35 +41,46 @@ class App {
   }
 
   _loadMap(position) {
+    // Assigning coordinates to the variables
     const { latitude, longitude } = position.coords;
+
+    // Renders map to the DOM
     this.#map = L.map('map').setView([latitude, longitude], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(this.#map);
+
+    // Handling clicks on map
     this.#map.on('click', this._showForm.bind(this));
   }
 
   _showForm(mapE) {
     this.#mapEvent = mapE;
+
+    // Removes 'hidden' class from the form element
     form.classList.remove('hidden');
     inputDistance.focus();
   }
 
   _toggleTypeField() {
-    inputType.addEventListener('change', function () {
-      inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
-      inputElevation
-        .closest('.form__row')
-        .classList.toggle('form__row--hidden');
-    });
+    // Handling change event on the type field
+    inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
+    inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
   }
 
   _addNewWorkout(event) {
+    // Clearing the input fields
     inputDistance.value = inputCadence.value = inputDuration.value = inputElevation.value =
       '';
+
+    // Prevents default behavior of the form
     event.preventDefault();
+
+    // Getting and assigning coordinates
     const { lat, lng } = this.#mapEvent.latlng;
+
+    // Adds popup to the map
     L.marker([lat, lng])
       .addTo(this.#map)
       .bindPopup(

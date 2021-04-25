@@ -11,7 +11,48 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
-let mapEvent, map;
+class Workout {
+  date = new Date();
+  id = String(Math.floor(Math.random() * Date.now())).slice(-10);
+
+  constructor(coords, distance, duration) {
+    this.coords = coords;
+    this.distance = distance; // in km
+    this.duration = duration; // in min
+  }
+}
+
+class Running extends Workout {
+  constructor(coords, distance, duration, cadence) {
+    super(coords, distance, duration);
+    this.cadence = cadence;
+    this.calcPace();
+  }
+
+  calcPace() {
+    // min/km
+    this.pace = this.duration / this.distance;
+    return this.pace;
+  }
+}
+class Cycling extends Workout {
+  constructor(coords, distance, duration, elevationGain) {
+    super(coords, distance, duration);
+    this.elevationGain = elevationGain;
+    this.calcSpeed();
+  }
+
+  calcSpeed() {
+    // km/h
+    this.speed = this.distance / (this.duration / 60);
+    return this.speed;
+  }
+}
+
+let newCycling = new Cycling([29, -12], 24, 98, 523);
+let newRunning = new Running([29, -12], 9, 30, 178);
+
+console.log(newCycling, newRunning);
 
 class App {
   #map;
@@ -70,6 +111,24 @@ class App {
   }
 
   _addNewWorkout(event) {
+    // Function for verifying Inputs (Must be Number and Positive)
+    const verifyInputs = (...inputs) =>
+      inputs.every(inp => Number.isFinite(inp) && inp > 0);
+
+    // Get the data from Input fields
+    const type = inputType.value;
+    const distance = +inputDistance.value;
+    const duration = +inputDuration.value;
+
+    // Checks the type and store the value to the 'paceOrSpeed' variable
+    const paceOrSpeed =
+      type === 'running' ? +inputCadence.value : +inputElevation.value;
+
+    // Validates the input
+    if (!verifyInputs(paceOrSpeed, distance, duration)) {
+      alert('Input must be valid and positive Number');
+    }
+
     // Clearing the input fields
     inputDistance.value = inputCadence.value = inputDuration.value = inputElevation.value =
       '';
